@@ -14,7 +14,7 @@ class MySQL
 
     public function __construct()
     {
-        extract(Config::get("MySQL",[
+        extract(Config::get("MySQL", [
             "host" => "string",
             "user" => "string",
             "pass" => "string",
@@ -63,6 +63,18 @@ class MySQL
     {
         $result = $this->query($query);
         return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    /**
+     * Executes an INSERT statement and returns the ID of the new row.
+     * 
+     * @param string $query
+     * @return int|string
+     */
+    public function insert(string $query)
+    {
+        $this->query($query);
+        return $this->sql->insert_id;
     }
 
     /**
