@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "21d5dbc7179ab7fcdfcc97c80381191c",
+    "content-hash": "3b736581dff4b1a2c2bed2fc0de30213",
     "packages": [
         {
             "name": "rpurinton/config",
-            "version": "1.0.5",
+            "version": "1.0.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rpurinton/config.git",
-                "reference": "edcf0f30169837565c5546060ce91b51deaa7a8b"
+                "reference": "22dc2372271154daee48c8a7dcdcefaab31ce50d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rpurinton/config/zipball/edcf0f30169837565c5546060ce91b51deaa7a8b",
-                "reference": "edcf0f30169837565c5546060ce91b51deaa7a8b",
+                "url": "https://api.github.com/repos/rpurinton/config/zipball/22dc2372271154daee48c8a7dcdcefaab31ce50d",
+                "reference": "22dc2372271154daee48c8a7dcdcefaab31ce50d",
                 "shasum": ""
             },
             "require": {
@@ -43,22 +43,22 @@
             "description": "A basic configuration loading utility.",
             "support": {
                 "issues": "https://github.com/rpurinton/config/issues",
-                "source": "https://github.com/rpurinton/config/tree/1.0.5"
+                "source": "https://github.com/rpurinton/config/tree/1.0.9"
             },
-            "time": "2025-02-18T04:48:50+00:00"
+            "time": "2025-02-19T20:02:33+00:00"
         },
         {
             "name": "rpurinton/https",
-            "version": "1.0.7",
+            "version": "1.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rpurinton/https.git",
-                "reference": "d253952b9f5752b0224ec934b63b2a9fcba71fc9"
+                "reference": "7519e151479b78f91e7d7ef2be7f8d1b34a7678d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rpurinton/https/zipball/d253952b9f5752b0224ec934b63b2a9fcba71fc9",
-                "reference": "d253952b9f5752b0224ec934b63b2a9fcba71fc9",
+                "url": "https://api.github.com/repos/rpurinton/https/zipball/7519e151479b78f91e7d7ef2be7f8d1b34a7678d",
+                "reference": "7519e151479b78f91e7d7ef2be7f8d1b34a7678d",
                 "shasum": ""
             },
             "require": {
@@ -84,22 +84,22 @@
             "description": "Abstract Static Class for making HTTPS Requests in PHP/Composer",
             "support": {
                 "issues": "https://github.com/rpurinton/https/issues",
-                "source": "https://github.com/rpurinton/https/tree/1.0.7"
+                "source": "https://github.com/rpurinton/https/tree/1.0.8"
             },
-            "time": "2025-02-18T20:00:34+00:00"
+            "time": "2025-02-19T20:16:15+00:00"
         },
         {
             "name": "rpurinton/log",
-            "version": "1.0.10",
+            "version": "1.0.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rpurinton/log.git",
-                "reference": "965f6f2b08236f2708730f3d777306a02c37762c"
+                "reference": "e78e1a737c27051688d5c61ff5a84564dabc5162"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rpurinton/log/zipball/965f6f2b08236f2708730f3d777306a02c37762c",
-                "reference": "965f6f2b08236f2708730f3d777306a02c37762c",
+                "url": "https://api.github.com/repos/rpurinton/log/zipball/e78e1a737c27051688d5c61ff5a84564dabc5162",
+                "reference": "e78e1a737c27051688d5c61ff5a84564dabc5162",
                 "shasum": ""
             },
             "require": {
@@ -126,9 +126,9 @@
             "description": "A Logging Library",
             "support": {
                 "issues": "https://github.com/rpurinton/log/issues",
-                "source": "https://github.com/rpurinton/log/tree/1.0.10"
+                "source": "https://github.com/rpurinton/log/tree/1.0.11"
             },
-            "time": "2025-02-19T20:03:04+00:00"
+            "time": "2025-02-19T20:16:35+00:00"
         }
     ],
     "packages-dev": [],
