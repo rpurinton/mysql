@@ -5,6 +5,10 @@ require __DIR__ . '/vendor/autoload.php';
 use RPurinton\MySQL;
 
 $sql = new MySQL;
-$result = $sql->fetch_all("SELECT 1");
-if($result[0][1] === "1") echo "Success!\n";
-else echo("Failure?!\nExpected 1 but got " . print_r($result, true) . "\n");
+$query = "
+    SELECT data
+    FROM users
+    WHERE id = 'e7ac6ea8-e6a9-11ef-9de4-03dd4eedb9d9'";
+$result = json_decode($sql->fetch_one($query), true);
+if($result['display_name'] === "Russell") die("Hello Russell!\n");
+echo("Failure?!\nExpected 'Russell' but got " . print_r($result, true) . "\n");
