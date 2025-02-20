@@ -15,7 +15,7 @@ class MySQL
 
     public function __construct(array $config = null)
     {
-        if (!$config) Config::get("MySQL", [
+        if (!$config) $config = Config::get("MySQL", [
             "host" => "string",
             "user" => "string",
             "pass" => "string",
