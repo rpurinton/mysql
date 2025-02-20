@@ -6,7 +6,8 @@ namespace RPurinton;
 
 use mysqli;
 use mysqli_result;
-use RuntimeException;
+use RPurinton\Config;
+use RPurinton\Exceptions\MySQLException;
 
 class MySQL
 {
@@ -23,11 +24,11 @@ class MySQL
 
         $this->sql = new mysqli($host, $user, $pass, $db);
         if ($this->sql->connect_error) {
-            throw new RuntimeException('Connect Error (' . $this->sql->connect_errno . ') ' . $this->sql->connect_error);
+            throw new MySQLException('Connect Error (' . $this->sql->connect_errno . ') ' . $this->sql->connect_error);
         }
         // Set charset to ensure proper encoding handling.
         if (!$this->sql->set_charset('utf8mb4')) {
-            throw new RuntimeException('Error setting charset: ' . $this->sql->error);
+            throw new MySQLException('Error setting charset: ' . $this->sql->error);
         }
     }
 
@@ -48,7 +49,7 @@ class MySQL
     {
         $result = $this->sql->query($query);
         if ($result === false) {
-            throw new RuntimeException('Query Error: ' . $this->sql->error);
+            throw new MySQLException('Query Error: ' . $this->sql->error);
         }
         return $result === true ? null : $result;
     }
@@ -66,6 +67,67 @@ class MySQL
     }
 
     /**
+     * Executes a SELECT query and returns the first row as an associative array.
+     *
+     * @param string $query
+     * @return array
+     */
+    public function fetch_row(string $query): array
+    {
+        $result = $this->query($query);
+        return $result->fetch_assoc();
+    }
+
+    /**
+     * Executes a SELECT query and returns the first column of the first row.
+     *
+     * @param string $query
+     * @return mixed
+     */
+    public function fetch_one(string $query): mixed
+    {
+        $result = $this->query($query);
+        $row = $result->fetch_row();
+        return $row[0];
+    }
+
+    /**
+     * Executes a SELECT query and returns the first column of all rows.
+     *
+     * @param string $query
+     * @return array
+     */
+    public function fetch_column(string $query): array
+    {
+        $result = $this->query($query);
+        $column = [];
+        while ($row = $result->fetch_row()) {
+            $column[] = $row[0];
+        }
+        return $column;
+    }
+
+    /**
+     * Execute multiple queries in a single call and return an array of results.
+     * 
+     * @param string $query
+     * @return array
+     */
+    public function multi(string $query): array
+    {
+        $this->sql->multi_query($query);
+        $results = [];
+        do {
+            $result = $this->sql->store_result();
+            if ($result) {
+                $results[] = $result->fetch_all(MYSQLI_ASSOC);
+                $result->free();
+            }
+        } while ($this->sql->more_results() && $this->sql->next_result());
+        return $results;
+    }
+
+    /**
      * Executes an INSERT statement and returns the ID of the new row.
      * 
      * @param string $query
@@ -78,14 +140,17 @@ class MySQL
     }
 
     /**
-     * Escapes a string for safe use in SQL queries.
+     * Escapes a string or array of strings for use in a query.
      *
-     * @param string $string
-     * @return string
+     * @param string|array $input
+     * @return string|array
      */
-    public function escape(string $string): string
+    public function escape(string|array $input): string|array
     {
-        return $this->sql->real_escape_string($string);
+        if (is_array($input)) {
+            return array_map([$this, 'escape'], $input);
+        }
+        return $this->sql->real_escape_string($input);
     }
 
     /**
@@ -119,7 +184,7 @@ class MySQL
     {
         $stmt = $this->sql->prepare($query);
         if (!$stmt) {
-            throw new RuntimeException('Prepare Failed: ' . $this->sql->error);
+            throw new MySQLException('Prepare Failed: ' . $this->sql->error);
         }
 
         if (count($params) > 0) {
@@ -141,12 +206,12 @@ class MySQL
                 $bindParams[] = $param;
             }
             if (!$stmt->bind_param($types, ...$bindParams)) {
-                throw new RuntimeException('Binding parameters failed: ' . $stmt->error);
+                throw new MySQLException('Binding parameters failed: ' . $stmt->error);
             }
         }
 
         if (!$stmt->execute()) {
-            throw new RuntimeException('Execute Failed: ' . $stmt->error);
+            throw new MySQLException('Execute Failed: ' . $stmt->error);
         }
 
         $result = $stmt->get_result();
