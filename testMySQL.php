@@ -4,7 +4,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 use RPurinton\MySQL;
 
-$sql = new MySQL;
+$sql = MySQL::connect();
 $query = "
     SELECT data
     FROM users
