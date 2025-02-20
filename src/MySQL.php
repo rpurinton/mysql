@@ -13,23 +13,27 @@ class MySQL
 {
     private mysqli $sql;
 
-    public function __construct()
+    public function __construct(array $config = null)
     {
-        extract(Config::get("MySQL", [
+        if (!$config) Config::get("MySQL", [
             "host" => "string",
             "user" => "string",
             "pass" => "string",
             "db" => "string",
-        ]));
+        ]);
 
-        $this->sql = new mysqli($host, $user, $pass, $db);
+        $this->sql = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
         if ($this->sql->connect_error) {
             throw new MySQLException('Connect Error (' . $this->sql->connect_errno . ') ' . $this->sql->connect_error);
         }
-        // Set charset to ensure proper encoding handling.
         if (!$this->sql->set_charset('utf8mb4')) {
             throw new MySQLException('Error setting charset: ' . $this->sql->error);
         }
+    }
+
+    public static function connect($config = null): MySQL
+    {
+        return new self($config);
     }
 
     public function __destruct()
