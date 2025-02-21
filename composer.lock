@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "rpurinton/config",
-            "version": "1.0.16",
+            "version": "1.0.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rpurinton/config.git",
-                "reference": "66858680974899b13976277e52143842a3951a98"
+                "reference": "5ef3778e098478b9e2851b12d8bbc0d888923bb6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rpurinton/config/zipball/66858680974899b13976277e52143842a3951a98",
-                "reference": "66858680974899b13976277e52143842a3951a98",
+                "url": "https://api.github.com/repos/rpurinton/config/zipball/5ef3778e098478b9e2851b12d8bbc0d888923bb6",
+                "reference": "5ef3778e098478b9e2851b12d8bbc0d888923bb6",
                 "shasum": ""
             },
             "require": {
@@ -43,21 +43,21 @@
             "description": "A basic configuration loading utility.",
             "support": {
                 "issues": "https://github.com/rpurinton/config/issues",
-                "source": "https://github.com/rpurinton/config/tree/1.0.16"
+                "source": "https://github.com/rpurinton/config/tree/1.0.20"
             },
-            "time": "2025-02-20T22:57:10+00:00"
+            "time": "2025-02-21T17:46:09+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.0",
         "ext-mysqli": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }
