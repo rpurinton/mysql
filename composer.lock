@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "58a3a7d5b6f530e0e3aa42fe7efe2032",
+    "content-hash": "482cae5190bee00b5f7950285101669a",
     "packages": [
         {
             "name": "rpurinton/config",
-            "version": "1.0.20",
+            "version": "1.0.21",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rpurinton/config.git",
-                "reference": "5ef3778e098478b9e2851b12d8bbc0d888923bb6"
+                "reference": "8675770de22dc4282ed4f835c802897e5d33e4af"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rpurinton/config/zipball/5ef3778e098478b9e2851b12d8bbc0d888923bb6",
-                "reference": "5ef3778e098478b9e2851b12d8bbc0d888923bb6",
+                "url": "https://api.github.com/repos/rpurinton/config/zipball/8675770de22dc4282ed4f835c802897e5d33e4af",
+                "reference": "8675770de22dc4282ed4f835c802897e5d33e4af",
                 "shasum": ""
             },
             "require": {
@@ -43,9 +43,9 @@
             "description": "A basic configuration loading utility.",
             "support": {
                 "issues": "https://github.com/rpurinton/config/issues",
-                "source": "https://github.com/rpurinton/config/tree/1.0.20"
+                "source": "https://github.com/rpurinton/config/tree/1.0.21"
             },
-            "time": "2025-02-21T17:46:09+00:00"
+            "time": "2025-02-21T17:59:19+00:00"
         }
     ],
     "packages-dev": [],
