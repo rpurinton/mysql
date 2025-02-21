@@ -16,12 +16,12 @@ class MySQL
 
     public function __construct(private ?array $config = null)
     {
-        if (!$config) $this->config = Config::get("MySQL", [
+        $this->config = Config::get("MySQL", [
             "host" => MySQLValidators::validateDb(...),
             "user" => MySQLValidators::validateUser(...),
             "pass" => MySQLValidators::validatePass(...),
             "db"   => MySQLValidators::validateDb(...)
-        ]);
+        ], $config);
         $this->reconnect();
     }
 
@@ -58,6 +58,7 @@ class MySQL
      */
     public function query(string $query): ?mysqli_result
     {
+        if (!$this->sql->ping()) $this->reconnect();
         $result = $this->sql->query($query);
         if ($result === false) {
             throw new MySQLException('Query Error: ' . $this->sql->error);
@@ -126,6 +127,7 @@ class MySQL
      */
     public function multi(string $query): array
     {
+        if (!$this->sql->ping()) $this->reconnect();
         $this->sql->multi_query($query);
         $results = [];
         do {
@@ -193,6 +195,7 @@ class MySQL
      */
     public function prepareAndExecute(string $query, array $params = []): ?mysqli_result
     {
+        if (!$this->sql->ping()) $this->reconnect();
         $stmt = $this->sql->prepare($query);
         if (!$stmt) {
             throw new MySQLException('Prepare Failed: ' . $this->sql->error);
@@ -239,6 +242,7 @@ class MySQL
      */
     public function transaction(callable $callback): void
     {
+        if (!$this->sql->ping()) $this->reconnect();
         $this->sql->begin_transaction();
         try {
             $callback();
