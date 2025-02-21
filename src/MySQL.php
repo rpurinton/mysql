@@ -12,7 +12,7 @@ use RPurinton\Exceptions\MySQLException;
 
 class MySQL
 {
-    private mysqli $sql;
+    private ?mysqli $sql = null;
 
     public function __construct(private ?array $config = null)
     {
