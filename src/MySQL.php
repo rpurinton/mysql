@@ -7,22 +7,29 @@ namespace RPurinton;
 use mysqli;
 use mysqli_result;
 use RPurinton\Config;
+use RPurinton\Validators\MySQLValidators;
 use RPurinton\Exceptions\MySQLException;
 
 class MySQL
 {
     private mysqli $sql;
 
-    public function __construct(array $config = null)
+    public function __construct(private ?array $config = null)
     {
-        if (!$config) $config = Config::get("MySQL", [
-            "host" => "string",
-            "user" => "string",
-            "pass" => "string",
-            "db" => "string",
+        if (!$config) $this->config = Config::get("MySQL", [
+            "host" => MySQLValidators::validateDb(...),
+            "user" => MySQLValidators::validateUser(...),
+            "pass" => MySQLValidators::validatePass(...),
+            "db"   => MySQLValidators::validateDb(...)
         ]);
+        $this->reconnect();
+    }
 
-        $this->sql = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
+    public function reconnect()
+    {
+        if ($this->sql) $this->sql->close();
+        extract($this->config);
+        $this->sql = new mysqli($host, $user, $pass, $db);
         if ($this->sql->connect_error) {
             throw new MySQLException('Connect Error (' . $this->sql->connect_errno . ') ' . $this->sql->connect_error);
         }
