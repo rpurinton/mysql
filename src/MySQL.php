@@ -100,6 +100,7 @@ class MySQL
     {
         $result = $this->query($query);
         $row = $result->fetch_row();
+        if (!$row) return null;
         return $row[0];
     }
 
