@@ -96,11 +96,12 @@ class MySQL
      * @param string $query
      * @return mixed
      */
-    public function fetch_one(string $query): ?mixed
+    public function fetch_one(string $query): mixed
     {
         $result = $this->query($query);
         $row = $result->fetch_row();
         if (!$row) return null;
+        if (!isset($row[0])) return null;
         return $row[0];
     }
 
