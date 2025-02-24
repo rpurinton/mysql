@@ -99,6 +99,7 @@ class MySQL
     public function fetch_one(string $query): mixed
     {
         $result = $this->query($query);
+        if (!$result) return null;
         $row = $result->fetch_row();
         if (!$row) return null;
         if (!isset($row[0])) return null;
