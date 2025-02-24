@@ -72,7 +72,7 @@ class MySQL
      * @param string $query
      * @return array
      */
-    public function fetch_all(string $query): array
+    public function fetch_all(string $query): ?array
     {
         $result = $this->query($query);
         return $result->fetch_all(MYSQLI_ASSOC);
@@ -84,7 +84,7 @@ class MySQL
      * @param string $query
      * @return array
      */
-    public function fetch_row(string $query): array
+    public function fetch_row(string $query): ?array
     {
         $result = $this->query($query);
         return $result->fetch_assoc();
@@ -96,7 +96,7 @@ class MySQL
      * @param string $query
      * @return mixed
      */
-    public function fetch_one(string $query): mixed
+    public function fetch_one(string $query): ?mixed
     {
         $result = $this->query($query);
         $row = $result->fetch_row();
@@ -110,7 +110,7 @@ class MySQL
      * @param string $query
      * @return array
      */
-    public function fetch_column(string $query): array
+    public function fetch_column(string $query): ?array
     {
         $result = $this->query($query);
         $column = [];
@@ -126,7 +126,7 @@ class MySQL
      * @param string $query
      * @return array
      */
-    public function multi(string $query): array
+    public function multi(string $query): ?array
     {
         if (!$this->sql->ping()) $this->reconnect();
         $this->sql->multi_query($query);
@@ -147,7 +147,7 @@ class MySQL
      * @param string $query
      * @return int|string
      */
-    public function insert(string $query)
+    public function insert(string $query): int|string
     {
         $this->query($query);
         return $this->sql->insert_id;
@@ -172,9 +172,9 @@ class MySQL
      *
      * @return int
      */
-    public function last_insert_id(): int
+    public function last_insert_id(): int|string
     {
-        return (int) $this->sql->insert_id;
+        return $this->sql->insert_id;
     }
 
     /**
