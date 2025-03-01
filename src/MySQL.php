@@ -23,6 +23,12 @@ class MySQL
             "db"   => MySQLValidators::validateDb(...)
         ], $config);
         $this->reconnect();
+        register_shutdown_function($this->shutdown(...));
+    }
+
+    private function shutdown()
+    {
+        if ($this->sql) $this->sql->close();
     }
 
     public function reconnect()
