@@ -12,13 +12,13 @@
     "require": {
         "php": "^8.0",
         "ext-mysqli": "*",
-        "rpurinton/config": "^1.0.23"
+        "rpurinton/config": "^1.0.24"
     },
     "autoload": {
         "psr-4": {
             "RPurinton\\": "src/"
         }
     },
-    "version": "1.0.19",
+    "version": "1.0.20",
     "minimum-stability": "stable"
 }
