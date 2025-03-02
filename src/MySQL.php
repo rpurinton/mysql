@@ -87,8 +87,9 @@ class MySQL
             }
             $this->ping_time = time();
             Log::debug("Ping time set", ['ping_time' => $this->ping_time]);
-            $this->wait_timeout = $this->sql->query('SELECT @@wait_timeout')->fetch_row()[0];
-            Log::debug("Wait timeout fetched", ['wait_timeout' => $this->wait_timeout]);
+            $wait_timeout = $this->sql->query('SELECT @@wait_timeout')->fetch_row()[0];
+            Log::debug("Wait timeout fetched", ['wait_timeout' => $wait_timeout]);
+            $this->wait_timeout = $wait_timeout;
             Log::info("Database reconnected successfully");
         } catch (\Throwable $e) {
             Log::error("Reconnect failed", ['error' => $e->getMessage()]);
