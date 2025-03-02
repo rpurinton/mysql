@@ -6,13 +6,10 @@ namespace RPurinton;
 
 use mysqli;
 use mysqli_result;
-use RPurinton\Config;
+use RPurinton\{Log, Config};
 use RPurinton\Validators\MySQLValidators;
 use RPurinton\Exceptions\MySQLException;
 
-/**
- * MySQL database abstraction layer.
- */
 class MySQL
 {
     private ?mysqli $sql = null;
@@ -27,6 +24,7 @@ class MySQL
      */
     public function __construct(private ?array $config = null)
     {
+        Log::trace("Constructor called", ['config' => $config]);
         try {
             $this->config = Config::get('MySQL', [
                 'host' => MySQLValidators::validateDb(...),
@@ -34,9 +32,13 @@ class MySQL
                 'pass' => MySQLValidators::validatePass(...),
                 'db'   => MySQLValidators::validateDb(...),
             ], $config);
+            Log::debug("Configuration loaded", ['config' => $this->config]);
             $this->reconnect();
+            Log::trace("Registering shutdown function");
             register_shutdown_function($this->shutdown(...));
+            Log::info("MySQL initialization completed successfully");
         } catch (\Throwable $e) {
+            Log::error("Initialization failed", ['error' => $e->getMessage()]);
             throw new MySQLException('Initialization failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
         }
     }
@@ -50,7 +52,10 @@ class MySQL
      */
     public static function connect(?array $config = null): self
     {
-        return new self($config);
+        Log::trace("Static connect called", ['config' => $config]);
+        $instance = new self($config);
+        Log::info("Static connect: connection established");
+        return $instance;
     }
 
     /**
@@ -61,23 +66,32 @@ class MySQL
      */
     public function reconnect(): void
     {
+        Log::trace("Reconnect called");
         try {
             if ($this->sql) {
+                Log::debug("Existing connection detected, closing old connection", ['host' => $this->config['host'] ?? 'unknown']);
                 $this->sql->close();
             }
             extract($this->config);
+            Log::debug("Attempting database connection", ['host' => $host, 'user' => $user, 'db' => $db]);
             $this->sql = new mysqli($host, $user, $pass, $db);
             if ($this->sql->connect_error) {
+                Log::error("Connection error", ['errno' => $this->sql->connect_errno, 'error' => $this->sql->connect_error]);
                 throw new MySQLException(
                     'Connect Error (' . $this->sql->connect_errno . ') ' . $this->sql->connect_error
                 );
             }
             if (!$this->sql->set_charset('utf8mb4')) {
+                Log::error("Error setting charset", ['error' => $this->sql->error]);
                 throw new MySQLException('Error setting charset: ' . $this->sql->error);
             }
+            // Fetch wait_timeout from server
             $this->wait_timeout = (int)$this->fetch_one('SELECT @@wait_timeout');
+            Log::debug("Wait timeout fetched", ['wait_timeout' => $this->wait_timeout]);
             $this->ping_time = time();
+            Log::info("Database reconnected successfully");
         } catch (\Throwable $e) {
+            Log::error("Reconnect failed", ['error' => $e->getMessage()]);
             throw new MySQLException('Reconnect failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
         }
     }
@@ -92,14 +106,23 @@ class MySQL
      */
     public function ping(): void
     {
+        Log::trace("Ping called", [
+            'ping_time'    => $this->ping_time,
+            'wait_timeout' => $this->wait_timeout,
+            'current_time' => time(),
+        ]);
         if (time() - $this->ping_time < $this->wait_timeout) {
             $this->ping_time = time();
+            Log::debug("Ping: within wait_timeout, resetting ping_time", ['new_ping_time' => $this->ping_time]);
             return;
         }
         try {
+            Log::trace("Pinging database with query: SELECT 1");
             $this->sql->query('SELECT 1');
             $this->ping_time = time();
+            Log::debug("Ping succeeded, updated ping_time", ['new_ping_time' => $this->ping_time]);
         } catch (\Throwable $e) {
+            Log::warn("Ping failed, attempting reconnect", ['error' => $e->getMessage()]);
             $this->reconnect();
         }
     }
@@ -113,14 +136,18 @@ class MySQL
      */
     public function query(string $query): ?mysqli_result
     {
+        Log::trace("Executing query", ['query' => $query]);
         try {
             $this->ping();
             $result = $this->sql->query($query);
             if ($result === false) {
+                Log::error("Query error", ['error' => $this->sql->error, 'query' => $query]);
                 throw new MySQLException('Query Error: ' . $this->sql->error);
             }
+            Log::debug("Query executed", ['result' => $result]);
             return $result === true ? null : $result;
         } catch (\Throwable $e) {
+            Log::error("Query failed", ['error' => $e->getMessage(), 'query' => $query]);
             throw new MySQLException('Query failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
         }
     }
@@ -134,10 +161,14 @@ class MySQL
      */
     public function fetch_all(string $query): ?array
     {
+        Log::trace("Fetching all rows", ['query' => $query]);
         try {
             $result = $this->query($query);
-            return $result->fetch_all(MYSQLI_ASSOC);
+            $data = $result->fetch_all(MYSQLI_ASSOC);
+            Log::debug("Fetched all rows", ['row_count' => count($data)]);
+            return $data;
         } catch (\Throwable $e) {
+            Log::error("Fetch all failed", ['error' => $e->getMessage(), 'query' => $query]);
             throw new MySQLException('Fetch all failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
         }
     }
@@ -151,10 +182,14 @@ class MySQL
      */
     public function fetch_row(string $query): ?array
     {
+        Log::trace("Fetching single row", ['query' => $query]);
         try {
             $result = $this->query($query);
-            return $result->fetch_assoc();
+            $row = $result->fetch_assoc();
+            Log::debug("Fetched row", ['row' => $row]);
+            return $row;
         } catch (\Throwable $e) {
+            Log::error("Fetch row failed", ['error' => $e->getMessage(), 'query' => $query]);
             throw new MySQLException('Fetch row failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
         }
     }
@@ -168,14 +203,19 @@ class MySQL
      */
     public function fetch_one(string $query): mixed
     {
+        Log::trace("Fetching single value", ['query' => $query]);
         try {
             $result = $this->query($query);
             if (!$result) {
+                Log::debug("No result set returned", ['query' => $query]);
                 return null;
             }
             $row = $result->fetch_row();
-            return (is_array($row) && isset($row[0])) ? $row[0] : null;
+            $value = (is_array($row) && isset($row[0])) ? $row[0] : null;
+            Log::debug("Fetched single value", ['value' => $value]);
+            return $value;
         } catch (\Throwable $e) {
+            Log::error("Fetch one failed", ['error' => $e->getMessage(), 'query' => $query]);
             throw new MySQLException('Fetch one failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
         }
     }
@@ -189,14 +229,17 @@ class MySQL
      */
     public function fetch_column(string $query): ?array
     {
+        Log::trace("Fetching column", ['query' => $query]);
         try {
             $result = $this->query($query);
             $column = [];
             while ($row = $result->fetch_row()) {
                 $column[] = $row[0];
             }
+            Log::debug("Fetched column", ['column_count' => count($column)]);
             return $column;
         } catch (\Throwable $e) {
+            Log::error("Fetch column failed", ['error' => $e->getMessage(), 'query' => $query]);
             throw new MySQLException('Fetch column failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
         }
     }
@@ -210,21 +253,28 @@ class MySQL
      */
     public function multi(string $query): ?array
     {
+        Log::trace("Executing multiple queries", ['query' => $query]);
         try {
             $this->ping();
             if (!$this->sql->multi_query($query)) {
+                Log::error("Multi query error", ['error' => $this->sql->error]);
                 throw new MySQLException('Multi Query Error: ' . $this->sql->error);
             }
+            Log::debug("Multi query executed");
             $results = [];
             do {
                 $result = $this->sql->store_result();
                 if ($result) {
-                    $results[] = $result->fetch_all(MYSQLI_ASSOC);
+                    $data = $result->fetch_all(MYSQLI_ASSOC);
+                    $results[] = $data;
+                    Log::debug("Multi query step", ['rows' => count($data)]);
                     $result->free();
                 }
             } while ($this->sql->more_results() && $this->sql->next_result());
+            Log::info("Multi query completed", ['result_sets' => count($results)]);
             return $results;
         } catch (\Throwable $e) {
+            Log::error("Multi query failed", ['error' => $e->getMessage()]);
             throw new MySQLException('Multi query failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
         }
     }
@@ -238,10 +288,14 @@ class MySQL
      */
     public function insert(string $query): int|string
     {
+        Log::trace("Executing insert", ['query' => $query]);
         try {
             $this->query($query);
-            return $this->sql->insert_id;
+            $id = $this->sql->insert_id;
+            Log::debug("Insert successful", ['insert_id' => $id]);
+            return $id;
         } catch (\Throwable $e) {
+            Log::error("Insert failed", ['error' => $e->getMessage(), 'query' => $query]);
             throw new MySQLException('Insert failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
         }
     }
@@ -255,12 +309,18 @@ class MySQL
      */
     public function escape(string|array $input): string|array
     {
+        Log::trace("Escaping input", ['input' => $input]);
         try {
             if (is_array($input)) {
-                return array_map([$this, 'escape'], $input);
+                $escaped = array_map([$this, 'escape'], $input);
+                Log::debug("Escaped array", ['escaped' => $escaped]);
+                return $escaped;
             }
-            return $this->sql->real_escape_string($input);
+            $escaped = $this->sql->real_escape_string($input);
+            Log::debug("Escaped string", ['escaped' => $escaped]);
+            return $escaped;
         } catch (\Throwable $e) {
+            Log::error("Escape failed", ['error' => $e->getMessage(), 'input' => $input]);
             throw new MySQLException('Escape failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
         }
     }
@@ -272,6 +332,7 @@ class MySQL
      */
     public function last_insert_id(): int|string
     {
+        Log::trace("Retrieving last insert ID", ['insert_id' => $this->sql->insert_id]);
         return $this->sql->insert_id;
     }
 
@@ -282,6 +343,7 @@ class MySQL
      */
     public function affected_rows(): int
     {
+        Log::trace("Retrieving affected rows", ['affected_rows' => $this->sql->affected_rows]);
         return $this->sql->affected_rows;
     }
 
@@ -295,10 +357,12 @@ class MySQL
      */
     public function prepareAndExecute(string $query, array $params = []): ?mysqli_result
     {
+        Log::trace("Preparing and executing query", ['query' => $query, 'params' => $params]);
         try {
             $this->ping();
             $stmt = $this->sql->prepare($query);
             if (!$stmt) {
+                Log::error("Prepare failed", ['error' => $this->sql->error, 'query' => $query]);
                 throw new MySQLException('Prepare Failed: ' . $this->sql->error);
             }
             if (count($params) > 0) {
@@ -310,7 +374,6 @@ class MySQL
                     } elseif (is_float($param)) {
                         $types .= 'd';
                     } elseif (is_null($param)) {
-                        // MySQLi converts strings bound as null to SQL NULL.
                         $types .= 's';
                     } elseif (is_resource($param)) {
                         $types .= 'b';
@@ -319,17 +382,22 @@ class MySQL
                     }
                     $bindParams[] = $param;
                 }
+                Log::debug("Binding parameters", ['types' => $types, 'params' => $bindParams]);
                 if (!$stmt->bind_param($types, ...$bindParams)) {
+                    Log::error("Binding parameters failed", ['error' => $stmt->error]);
                     throw new MySQLException('Binding parameters failed: ' . $stmt->error);
                 }
             }
             if (!$stmt->execute()) {
+                Log::error("Execute failed", ['error' => $stmt->error]);
                 throw new MySQLException('Execute Failed: ' . $stmt->error);
             }
             $result = $stmt->get_result();
             $stmt->close();
+            Log::info("Prepare and execute completed", ['result' => $result !== null ? 'result set returned' : 'no result set']);
             return $result ?: null;
         } catch (\Throwable $e) {
+            Log::error("Prepare and execute failed", ['error' => $e->getMessage(), 'query' => $query]);
             throw new MySQLException('Prepare and execute failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
         }
     }
@@ -343,13 +411,16 @@ class MySQL
      */
     public function transaction(callable $callback): void
     {
+        Log::trace("Beginning transaction");
         $this->ping();
         $this->sql->begin_transaction();
         try {
             $callback();
             $this->sql->commit();
+            Log::info("Transaction committed successfully");
         } catch (\Throwable $e) {
             $this->sql->rollback();
+            Log::warn("Transaction rolled back", ['error' => $e->getMessage()]);
             throw new MySQLException('Transaction failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
         }
     }
@@ -361,11 +432,13 @@ class MySQL
      */
     private function shutdown(): void
     {
+        Log::trace("Shutdown called");
         if ($this->sql) {
             try {
                 $this->sql->close();
+                Log::info("Database connection closed");
             } catch (\Throwable $e) {
-                // Log error or silently ignore.
+                Log::error("Error during shutdown", ['error' => $e->getMessage()]);
             }
         }
     }
@@ -375,6 +448,7 @@ class MySQL
      */
     public function __destruct()
     {
+        Log::trace("Destructor called");
         $this->shutdown();
     }
 }
