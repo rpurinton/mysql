@@ -3,8 +3,9 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-use RPurinton\MySQL;
+use RPurinton\{Log, MySQL};
 
+Log::install();
 $sql = MySQL::connect();
 $query = "
     SELECT data
