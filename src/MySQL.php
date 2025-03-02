@@ -15,6 +15,8 @@ class MySQL
     private ?mysqli $sql = null;
     private int $ping_time = 0;
     private int $wait_timeout = 28800;
+    private bool $closed = false;
+
 
     /**
      * Constructor.
@@ -433,13 +435,16 @@ class MySQL
     private function shutdown(): void
     {
         Log::trace("Shutdown called");
-        if ($this->sql) {
-            try {
-                $this->sql->close();
-                Log::info("Database connection closed");
-            } catch (\Throwable $e) {
-                Log::trace("Error during shutdown", ['error' => $e->getMessage()]);
-            }
+        if ($this->closed || !$this->sql) {
+            Log::debug("Connection already closed or not initialized");
+            return;
+        }
+        try {
+            $this->sql->close();
+            $this->closed = true;
+            Log::info("Database connection closed");
+        } catch (\Throwable $e) {
+            Log::trace("Error during shutdown", ['error' => $e->getMessage()]);
         }
     }
 
