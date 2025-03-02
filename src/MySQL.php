@@ -307,10 +307,14 @@ class MySQL
      * @return string|array
      * @throws MySQLException On escape failure.
      */
-    public function escape(string|array $input): string|array
+    public function escape(string|array|null $input): string|array|null
     {
         Log::trace("Escaping input", ['input' => $input]);
         try {
+            if ($input === null) {
+                Log::debug("Input is null");
+                return null;
+            }
             if (is_array($input)) {
                 $escaped = array_map([$this, 'escape'], $input);
                 Log::debug("Escaped array", ['escaped' => $escaped]);
