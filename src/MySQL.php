@@ -14,7 +14,7 @@ class MySQL
 {
     private ?mysqli $sql = null;
     private int $ping_time = 0;
-    private int $wait_timeout = 0;
+    private int $wait_timeout = 28800;
 
     /**
      * Constructor.
@@ -85,10 +85,10 @@ class MySQL
                 Log::error("Error setting charset", ['error' => $this->sql->error]);
                 throw new MySQLException('Error setting charset: ' . $this->sql->error);
             }
-            // Fetch wait_timeout from server
-            $this->wait_timeout = (int)$this->fetch_one("SHOW VARIABLES LIKE 'wait_timeout';");
-            Log::debug("Wait timeout fetched", ['wait_timeout' => $this->wait_timeout]);
             $this->ping_time = time();
+            Log::debug("Ping time set", ['ping_time' => $this->ping_time]);
+            $this->wait_timeout = $this->sql->query('SELECT @@wait_timeout')->fetch_row()[0];
+            Log::debug("Wait timeout fetched", ['wait_timeout' => $this->wait_timeout]);
             Log::info("Database reconnected successfully");
         } catch (\Throwable $e) {
             Log::error("Reconnect failed", ['error' => $e->getMessage()]);
