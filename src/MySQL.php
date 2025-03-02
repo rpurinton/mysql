@@ -36,8 +36,6 @@ class MySQL
             ], $config);
             Log::debug("Configuration loaded", ['config' => $this->config]);
             $this->reconnect();
-            Log::trace("Registering shutdown function");
-            register_shutdown_function($this->shutdown(...));
             Log::info("MySQL initialization completed successfully");
         } catch (\Throwable $e) {
             Log::error("Initialization failed", ['error' => $e->getMessage()]);
@@ -446,5 +444,14 @@ class MySQL
         } catch (\Throwable $e) {
             Log::error("Error during shutdown", ['error' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Destructor.
+     */
+    public function __destruct()
+    {
+        Log::trace("Destructor called");
+        $this->shutdown();
     }
 }
