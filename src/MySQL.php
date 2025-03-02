@@ -438,7 +438,7 @@ class MySQL
                 $this->sql->close();
                 Log::info("Database connection closed");
             } catch (\Throwable $e) {
-                Log::error("Error during shutdown", ['error' => $e->getMessage()]);
+                Log::trace("Error during shutdown", ['error' => $e->getMessage()]);
             }
         }
     }
