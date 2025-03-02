@@ -447,13 +447,4 @@ class MySQL
             Log::trace("Error during shutdown", ['error' => $e->getMessage()]);
         }
     }
-
-    /**
-     * Destructor.
-     */
-    public function __destruct()
-    {
-        Log::trace("Destructor called");
-        $this->shutdown();
-    }
 }
