@@ -86,7 +86,7 @@ class MySQL
                 throw new MySQLException('Error setting charset: ' . $this->sql->error);
             }
             // Fetch wait_timeout from server
-            $this->wait_timeout = (int)$this->fetch_one('SELECT @@wait_timeout');
+            $this->wait_timeout = (int)$this->fetch_one("SHOW VARIABLES LIKE 'wait_timeout';");
             Log::debug("Wait timeout fetched", ['wait_timeout' => $this->wait_timeout]);
             $this->ping_time = time();
             Log::info("Database reconnected successfully");
