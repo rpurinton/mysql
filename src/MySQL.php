@@ -74,7 +74,7 @@ class MySQL
             }
             extract($this->config);
             Log::debug("Attempting database connection", ['host' => $host, 'user' => $user, 'db' => $db]);
-            $this->sql = new mysqli($host, $user, $pass, $db);
+            $this->sql = new mysqli($host, $user, $password, $db);
             if ($this->sql->connect_error) {
                 Log::error("Connection error", ['errno' => $this->sql->connect_errno, 'error' => $this->sql->connect_error]);
                 throw new MySQLException(
