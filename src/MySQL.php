@@ -31,7 +31,7 @@ class MySQL
             $this->config = Config::get('MySQL', [
                 'host' => MySQLValidators::validateDb(...),
                 'user' => MySQLValidators::validateUser(...),
-                'pass' => MySQLValidators::validatePass(...),
+                'password' => MySQLValidators::validatePass(...),
                 'db'   => MySQLValidators::validateDb(...),
             ], $config);
             Log::debug("Configuration loaded", ['config' => $this->config]);
