@@ -13,13 +13,13 @@
         "php": "^8.0",
         "ext-mysqli": "*",
         "rpurinton/config": "^1.0.25",
-        "rpurinton/log": "^1.0.30"
+        "rpurinton/log": "^1.0.32"
     },
     "autoload": {
         "psr-4": {
             "RPurinton\\": "src/"
         }
     },
-    "version": "1.0.30",
+    "version": "1.0.31",
     "minimum-stability": "stable"
 }
