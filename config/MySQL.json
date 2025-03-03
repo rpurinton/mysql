@@ -1,6 +1,6 @@
 {
-    "host": "127.0.0.1",
-    "user": "testmysql",
+    "hostname": "localhost",
+    "username": "testmysql",
     "password": "testmysql",
-    "db": "testmysql"
+    "database": "testmysql"
 }
