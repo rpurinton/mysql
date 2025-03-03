@@ -29,10 +29,10 @@ class MySQL
         Log::trace("Constructor called", ['config' => $config]);
         try {
             $this->config = Config::get('MySQL', [
-                'host' => MySQLValidators::validateDb(...),
-                'user' => MySQLValidators::validateUser(...),
-                'password' => MySQLValidators::validatePass(...),
-                'db'   => MySQLValidators::validateDb(...),
+                'host|hostname' => MySQLValidators::validateHost(...),
+                'user|username' => MySQLValidators::validateUser(...),
+                'password|pass' => MySQLValidators::validatePass(...),
+                'database|db'   => MySQLValidators::validateDb(...),
             ], $config);
             Log::debug("Configuration loaded", ['config' => $this->config]);
             $this->reconnect();
@@ -73,8 +73,8 @@ class MySQL
                 $this->sql->close();
             }
             extract($this->config);
-            Log::debug("Attempting database connection", ['host' => $host, 'user' => $user, 'db' => $db]);
-            $this->sql = new mysqli($host, $user, $password, $db);
+            Log::debug("Attempting database connection", ['host' => $host, 'user' => $user, 'db' => $database]);
+            $this->sql = new mysqli($host, $user, $password, $database);
             if ($this->sql->connect_error) {
                 Log::error("Connection error", ['errno' => $this->sql->connect_errno, 'error' => $this->sql->connect_error]);
                 throw new MySQLException(
