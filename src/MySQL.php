@@ -36,9 +36,6 @@ class MySQL
             ], $config);
             Log::debug("Configuration loaded", ['config' => $this->config]);
             $this->reconnect();
-            declare(ticks = 1);
-            pcntl_signal(SIGTERM, $this->shutdown(...));
-            pcntl_signal(SIGINT, $this->shutdown(...));
             Log::info("MySQL initialization completed successfully");
         } catch (\Throwable $e) {
             Log::error("Initialization failed", ['error' => $e->getMessage()]);
