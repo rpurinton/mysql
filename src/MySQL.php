@@ -15,8 +15,6 @@ class MySQL
     private ?mysqli $sql = null;
     private int $ping_time = 0;
     private int $wait_timeout = 28800;
-    private bool $closed = false;
-
 
     /**
      * Constructor.
@@ -36,6 +34,7 @@ class MySQL
             ], $config);
             Log::debug("Configuration loaded", ['config' => $this->config]);
             $this->reconnect();
+            register_shutdown_function($this->shutdown(...));
             Log::info("MySQL initialization completed successfully");
         } catch (\Throwable $e) {
             Log::error("Initialization failed", ['error' => $e->getMessage()]);
@@ -437,25 +436,15 @@ class MySQL
     private function shutdown(): void
     {
         Log::trace("Shutdown called");
-        if ($this->closed || !$this->sql) {
-            Log::debug("Connection already closed or not initialized");
+        if (!$this->sql) {
+            Log::debug("Connection not initialized");
             return;
         }
         try {
             $this->sql->close();
-            $this->closed = true;
             Log::info("Database connection closed");
         } catch (\Throwable $e) {
             Log::error("Error during shutdown", ['error' => $e->getMessage()]);
         }
-    }
-
-    /**
-     * Destructor.
-     */
-    public function __destruct()
-    {
-        Log::trace("Destructor called");
-        $this->shutdown();
     }
 }
