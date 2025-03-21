@@ -14,7 +14,7 @@ class MySQL
 {
     private ?mysqli $sql = null;
     private int $ping_time = 0;
-    private int $wait_timeout = 14400;
+    private int $wait_timeout = 2700;
     private bool $closed = false;
 
 
