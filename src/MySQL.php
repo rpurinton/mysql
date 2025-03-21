@@ -14,7 +14,7 @@ class MySQL
 {
     private ?mysqli $sql = null;
     private int $ping_time = 0;
-    private int $wait_timeout = 28800;
+    private int $wait_timeout = 14400;
     private bool $closed = false;
 
 
@@ -87,7 +87,7 @@ class MySQL
             }
             $this->ping_time = time();
             Log::debug("Ping time set", ['ping_time' => $this->ping_time]);
-            $this->wait_timeout = (int)$this->sql->query('SELECT @@wait_timeout')->fetch_row()[0];
+            $this->wait_timeout = (int)$this->sql->query('SELECT @@wait_timeout')->fetch_row()[0] / 2;
             Log::debug("Wait timeout fetched", ['wait_timeout' => $this->wait_timeout]);
             Log::info("Database reconnected successfully");
         } catch (\Throwable $e) {
