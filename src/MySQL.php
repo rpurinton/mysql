@@ -26,7 +26,7 @@ class MySQL
      */
     public function __construct(private ?array $config = null)
     {
-        Log::trace("Constructor called", ['config' => $config]);
+        Log::trace(__METHOD__, ['config' => $config]);
         try {
             $this->config = Config::get('MySQL', [
                 'host|hostname' => MySQLValidators::validateHost(...),
@@ -34,9 +34,9 @@ class MySQL
                 'password|pass' => MySQLValidators::validatePass(...),
                 'database|db'   => MySQLValidators::validateDb(...),
             ], $config);
-            Log::debug("Configuration loaded", ['config' => $this->config]);
+            Log::trace("Configuration loaded", ['config' => $this->config]);
             $this->reconnect();
-            Log::info("MySQL initialization completed successfully");
+            Log::debug("MySQL initialization completed successfully");
         } catch (\Throwable $e) {
             Log::error("Initialization failed", ['error' => $e->getMessage()]);
             throw new MySQLException('Initialization failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
@@ -52,9 +52,9 @@ class MySQL
      */
     public static function connect(?array $config = null): self
     {
-        Log::trace("Static connect called", ['config' => $config]);
+        Log::trace(__METHOD__, ['config' => $config]);
         $instance = new self($config);
-        Log::info("Static connect: connection established");
+        Log::debug("Static connect: connection established");
         return $instance;
     }
 
@@ -66,14 +66,14 @@ class MySQL
      */
     public function reconnect(): void
     {
-        Log::trace("Reconnect called");
+        Log::trace(__METHOD__);
         try {
             if ($this->sql) {
-                Log::debug("Existing connection detected, closing old connection", ['host' => $this->config['host'] ?? 'unknown']);
+                Log::trace("Existing connection detected, closing old connection", ['host' => $this->config['host'] ?? 'unknown']);
                 $this->sql->close();
             }
             extract($this->config);
-            Log::debug("Attempting database connection", ['host' => $host, 'user' => $user, 'db' => $database]);
+            Log::trace("Attempting database connection", ['host' => $host, 'user' => $user, 'db' => $database]);
             $this->sql = new mysqli($host, $user, $password, $database);
             if ($this->sql->connect_error) {
                 Log::error("Connection error", ['errno' => $this->sql->connect_errno, 'error' => $this->sql->connect_error]);
@@ -86,10 +86,10 @@ class MySQL
                 throw new MySQLException('Error setting charset: ' . $this->sql->error);
             }
             $this->ping_time = time();
-            Log::debug("Ping time set", ['ping_time' => $this->ping_time]);
+            Log::trace("Ping time set", ['ping_time' => $this->ping_time]);
             $this->wait_timeout = (int)$this->sql->query('SELECT @@wait_timeout')->fetch_row()[0] / 2;
-            Log::debug("Wait timeout fetched", ['wait_timeout' => $this->wait_timeout]);
-            Log::info("Database reconnected successfully");
+            Log::trace("Wait timeout fetched", ['wait_timeout' => $this->wait_timeout]);
+            Log::debug("Database reconnected successfully");
         } catch (\Throwable $e) {
             Log::error("Reconnect failed", ['error' => $e->getMessage()]);
             throw new MySQLException('Reconnect failed: ' . $e->getMessage(), (int)$e->getCode(), $e);
@@ -106,21 +106,21 @@ class MySQL
      */
     public function ping(): void
     {
-        Log::trace("Ping called", [
+        Log::trace(__METHOD__, [
             'ping_time'    => $this->ping_time,
             'wait_timeout' => $this->wait_timeout,
             'current_time' => time(),
         ]);
         if (time() - $this->ping_time < $this->wait_timeout) {
             $this->ping_time = time();
-            Log::debug("Ping: within wait_timeout, resetting ping_time", ['new_ping_time' => $this->ping_time]);
+            Log::trace("Ping: within wait_timeout, resetting ping_time", ['new_ping_time' => $this->ping_time]);
             return;
         }
         try {
             Log::trace("Pinging database with query: SELECT 1");
             $this->sql->query('SELECT 1');
             $this->ping_time = time();
-            Log::debug("Ping succeeded, updated ping_time", ['new_ping_time' => $this->ping_time]);
+            Log::trace("Ping succeeded, updated ping_time", ['new_ping_time' => $this->ping_time]);
         } catch (\Throwable $e) {
             Log::warn("Ping failed, attempting reconnect", ['error' => $e->getMessage()]);
             $this->reconnect();
@@ -136,7 +136,7 @@ class MySQL
      */
     public function query(string $query): ?mysqli_result
     {
-        Log::trace("Executing query", ['query' => $query]);
+        Log::trace(__METHOD__, ['query' => $query]);
         try {
             $this->ping();
             $result = $this->sql->query($query);
@@ -144,7 +144,7 @@ class MySQL
                 Log::error("Query error", ['error' => $this->sql->error, 'query' => $query]);
                 throw new MySQLException('Query Error: ' . $this->sql->error);
             }
-            Log::debug("Query executed", ['result' => $result]);
+            Log::trace("Query executed", ['result' => $result]);
             return $result === true ? null : $result;
         } catch (\Throwable $e) {
             Log::error("Query failed", ['error' => $e->getMessage(), 'query' => $query]);
@@ -161,11 +161,11 @@ class MySQL
      */
     public function fetch_all(string $query): ?array
     {
-        Log::trace("Fetching all rows", ['query' => $query]);
+        Log::trace(__METHOD__, ['query' => $query]);
         try {
             $result = $this->query($query);
             $data = $result->fetch_all(MYSQLI_ASSOC);
-            Log::debug("Fetched all rows", ['row_count' => count($data)]);
+            Log::trace("Fetched all rows", ['row_count' => count($data)]);
             return $data;
         } catch (\Throwable $e) {
             Log::error("Fetch all failed", ['error' => $e->getMessage(), 'query' => $query]);
@@ -182,11 +182,11 @@ class MySQL
      */
     public function fetch_row(string $query): ?array
     {
-        Log::trace("Fetching single row", ['query' => $query]);
+        Log::trace(__METHOD__, ['query' => $query]);
         try {
             $result = $this->query($query);
             $row = $result->fetch_assoc();
-            Log::debug("Fetched row", ['row' => $row]);
+            Log::trace("Fetched row", ['row' => $row]);
             return $row;
         } catch (\Throwable $e) {
             Log::error("Fetch row failed", ['error' => $e->getMessage(), 'query' => $query]);
@@ -203,16 +203,16 @@ class MySQL
      */
     public function fetch_one(string $query): mixed
     {
-        Log::trace("Fetching single value", ['query' => $query]);
+        Log::trace(__METHOD__, ['query' => $query]);
         try {
             $result = $this->query($query);
             if (!$result) {
-                Log::debug("No result set returned", ['query' => $query]);
+                Log::trace("No result set returned", ['query' => $query]);
                 return null;
             }
             $row = $result->fetch_row();
             $value = (is_array($row) && isset($row[0])) ? $row[0] : null;
-            Log::debug("Fetched single value", ['value' => $value]);
+            Log::trace("Fetched single value", ['value' => $value]);
             return $value;
         } catch (\Throwable $e) {
             Log::error("Fetch one failed", ['error' => $e->getMessage(), 'query' => $query]);
@@ -229,14 +229,14 @@ class MySQL
      */
     public function fetch_column(string $query): ?array
     {
-        Log::trace("Fetching column", ['query' => $query]);
+        Log::trace(__METHOD__, ['query' => $query]);
         try {
             $result = $this->query($query);
             $column = [];
             while ($row = $result->fetch_row()) {
                 $column[] = $row[0];
             }
-            Log::debug("Fetched column", ['column_count' => count($column)]);
+            Log::trace("Fetched column", ['column_count' => count($column)]);
             return $column;
         } catch (\Throwable $e) {
             Log::error("Fetch column failed", ['error' => $e->getMessage(), 'query' => $query]);
@@ -253,25 +253,25 @@ class MySQL
      */
     public function multi(string $query): ?array
     {
-        Log::trace("Executing multiple queries", ['query' => $query]);
+        Log::trace(__METHOD__, ['query' => $query]);
         try {
             $this->ping();
             if (!$this->sql->multi_query($query)) {
                 Log::error("Multi query error", ['error' => $this->sql->error]);
                 throw new MySQLException('Multi Query Error: ' . $this->sql->error);
             }
-            Log::debug("Multi query executed");
+            Log::trace("Multi query executed");
             $results = [];
             do {
                 $result = $this->sql->store_result();
                 if ($result) {
                     $data = $result->fetch_all(MYSQLI_ASSOC);
                     $results[] = $data;
-                    Log::debug("Multi query step", ['rows' => count($data)]);
+                    Log::trace("Multi query step", ['rows' => count($data)]);
                     $result->free();
                 }
             } while ($this->sql->more_results() && $this->sql->next_result());
-            Log::info("Multi query completed", ['result_sets' => count($results)]);
+            Log::debug("Multi query completed", ['result_sets' => count($results)]);
             return $results;
         } catch (\Throwable $e) {
             Log::error("Multi query failed", ['error' => $e->getMessage()]);
@@ -288,11 +288,11 @@ class MySQL
      */
     public function insert(string $query): int|string
     {
-        Log::trace("Executing insert", ['query' => $query]);
+        Log::trace(__METHOD__, ['query' => $query]);
         try {
             $this->query($query);
             $id = $this->sql->insert_id;
-            Log::debug("Insert successful", ['insert_id' => $id]);
+            Log::trace("Insert successful", ['insert_id' => $id]);
             return $id;
         } catch (\Throwable $e) {
             Log::error("Insert failed", ['error' => $e->getMessage(), 'query' => $query]);
@@ -309,19 +309,19 @@ class MySQL
      */
     public function escape(string|array|null $input): string|array|null
     {
-        Log::trace("Escaping input", ['input' => $input]);
+        Log::trace(__METHOD__, ['input' => $input]);
         try {
             if ($input === null) {
-                Log::debug("Input is null");
+                Log::trace("Input is null");
                 return null;
             }
             if (is_array($input)) {
                 $escaped = array_map([$this, 'escape'], $input);
-                Log::debug("Escaped array", ['escaped' => $escaped]);
+                Log::trace("Escaped array", ['escaped' => $escaped]);
                 return $escaped;
             }
             $escaped = $this->sql->real_escape_string($input);
-            Log::debug("Escaped string", ['escaped' => $escaped]);
+            Log::trace("Escaped string", ['escaped' => $escaped]);
             return $escaped;
         } catch (\Throwable $e) {
             Log::error("Escape failed", ['error' => $e->getMessage(), 'input' => $input]);
@@ -336,7 +336,7 @@ class MySQL
      */
     public function last_insert_id(): int|string
     {
-        Log::trace("Retrieving last insert ID", ['insert_id' => $this->sql->insert_id]);
+        Log::trace(__METHOD__, ['insert_id' => $this->sql->insert_id]);
         return $this->sql->insert_id;
     }
 
@@ -347,7 +347,7 @@ class MySQL
      */
     public function affected_rows(): int
     {
-        Log::trace("Retrieving affected rows", ['affected_rows' => $this->sql->affected_rows]);
+        Log::trace(__METHOD__, ['affected_rows' => $this->sql->affected_rows]);
         return $this->sql->affected_rows;
     }
 
@@ -361,7 +361,7 @@ class MySQL
      */
     public function prepareAndExecute(string $query, array $params = []): ?mysqli_result
     {
-        Log::trace("Preparing and executing query", ['query' => $query, 'params' => $params]);
+        Log::trace(__METHOD__, ['query' => $query, 'params' => $params]);
         try {
             $this->ping();
             $stmt = $this->sql->prepare($query);
@@ -386,7 +386,7 @@ class MySQL
                     }
                     $bindParams[] = $param;
                 }
-                Log::debug("Binding parameters", ['types' => $types, 'params' => $bindParams]);
+                Log::trace("Binding parameters", ['types' => $types, 'params' => $bindParams]);
                 if (!$stmt->bind_param($types, ...$bindParams)) {
                     Log::error("Binding parameters failed", ['error' => $stmt->error]);
                     throw new MySQLException('Binding parameters failed: ' . $stmt->error);
@@ -398,7 +398,7 @@ class MySQL
             }
             $result = $stmt->get_result();
             $stmt->close();
-            Log::info("Prepare and execute completed", ['result' => $result !== null ? 'result set returned' : 'no result set']);
+            Log::debug("Prepare and execute completed", ['result' => $result !== null ? 'result set returned' : 'no result set']);
             return $result ?: null;
         } catch (\Throwable $e) {
             Log::error("Prepare and execute failed", ['error' => $e->getMessage(), 'query' => $query]);
@@ -415,13 +415,13 @@ class MySQL
      */
     public function transaction(callable $callback): void
     {
-        Log::trace("Beginning transaction");
+        Log::trace(__METHOD__);
         $this->ping();
         $this->sql->begin_transaction();
         try {
             $callback();
             $this->sql->commit();
-            Log::info("Transaction committed successfully");
+            Log::debug("Transaction committed successfully");
         } catch (\Throwable $e) {
             $this->sql->rollback();
             Log::warn("Transaction rolled back", ['error' => $e->getMessage()]);
@@ -434,17 +434,17 @@ class MySQL
      *
      * @return void
      */
-    private function shutdown(): void
+    public function shutdown(): void
     {
-        Log::trace("Shutdown called");
+        Log::trace(__METHOD__);
         if ($this->closed || !$this->sql) {
-            Log::debug("Connection already closed or not initialized");
+            Log::trace("Connection already closed or not initialized");
             return;
         }
         try {
             $this->sql->close();
             $this->closed = true;
-            Log::info("Database connection closed");
+            Log::debug("Database connection closed");
         } catch (\Throwable $e) {
             Log::error("Error during shutdown", ['error' => $e->getMessage()]);
         }
@@ -455,7 +455,7 @@ class MySQL
      */
     public function __destruct()
     {
-        Log::trace("Destructor called");
+        Log::trace(__METHOD__);
         $this->shutdown();
     }
 }
