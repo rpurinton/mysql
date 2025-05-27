@@ -1,5 +1,5 @@
 {
-    "hostname": "localhost",
+    "hostname": "mysql",
     "username": "testmysql",
     "password": "testmysql",
     "database": "testmysql"

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "00895a368acb8df8bceebbc9aaa07aa3",
+    "content-hash": "db4db1c3885611cf5e872e7ed439e3e7",
     "packages": [
         {
             "name": "rpurinton/config",
@@ -90,16 +90,16 @@
         },
         {
             "name": "rpurinton/log",
-            "version": "1.0.39",
+            "version": "1.0.40",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rpurinton/log.git",
-                "reference": "2f9289db253415f44224c0f7fb132c988e80d89c"
+                "reference": "e89fc078c472195d0c1877e09313dfbab1760d0c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rpurinton/log/zipball/2f9289db253415f44224c0f7fb132c988e80d89c",
-                "reference": "2f9289db253415f44224c0f7fb132c988e80d89c",
+                "url": "https://api.github.com/repos/rpurinton/log/zipball/e89fc078c472195d0c1877e09313dfbab1760d0c",
+                "reference": "e89fc078c472195d0c1877e09313dfbab1760d0c",
                 "shasum": ""
             },
             "require": {
@@ -126,9 +126,9 @@
             "description": "A Logging Library",
             "support": {
                 "issues": "https://github.com/rpurinton/log/issues",
-                "source": "https://github.com/rpurinton/log/tree/1.0.39"
+                "source": "https://github.com/rpurinton/log/tree/1.0.40"
             },
-            "time": "2025-03-16T00:39:22+00:00"
+            "time": "2025-03-28T15:54:39+00:00"
         },
         {
             "name": "rpurinton/webhook",
